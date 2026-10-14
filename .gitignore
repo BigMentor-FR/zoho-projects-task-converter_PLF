@@ -1,0 +1,8 @@
+work/
+__pycache__/
+*.pyc
+.DS_Store
+outputs/*
+!outputs/convertir_zoho.py
+!outputs/README.md
+!outputs/requirements.txt
