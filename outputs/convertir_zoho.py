@@ -54,10 +54,11 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
             raise ValueError(f"Colonne absente du modèle : {name}")
     out.delete_rows(2, out.max_row)
     # Champ personnalisé RACI, à associer dans l'assistant d'import Zoho.
-    if "Responsible" not in target_headers:
-        target_headers.append("Responsible")
-        out.cell(1, len(target_headers), "Responsible")._style = copy(out.cell(1, 1)._style)
-        styles.append(copy(styles[0]))
+    for custom_header in ("Responsible", "Prerequisites"):
+        if custom_header not in target_headers:
+            target_headers.append(custom_header)
+            out.cell(1, len(target_headers), custom_header)._style = copy(out.cell(1, 1)._style)
+            styles.append(copy(styles[0]))
     warnings = []
     graph = {}
     for task in tasks:
@@ -103,7 +104,8 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
                   "TASK DESCRIPTION": description, "TASK LIST NAME": str(list_id) if list_id else list_name,
                   "START DATE": start, "DUE DATE": end,
                   "TASK OWNER": (owners or {}).get(identifier), "CUSTOM STATUS": status,
-                  "Responsible": task["Pilote proposé / appuis"]}
+                  "Responsible": task["Pilote proposé / appuis"],
+                  "Prerequisites": task["Critère d’acceptation / prérequis"]}
         out.append([values.get(str(h).strip()) for h in target_headers])
         for c, style in zip(out[out.max_row], styles):
             c._style = copy(style)
@@ -134,10 +136,13 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
     out.column_dimensions["N"].width = 15
     responsible_column = target_headers.index("Responsible") + 1
     out.column_dimensions[openpyxl.utils.get_column_letter(responsible_column)].width = 50
+    prerequisites_column = target_headers.index("Prerequisites") + 1
+    out.column_dimensions[openpyxl.utils.get_column_letter(prerequisites_column)].width = 85
     for row in out.iter_rows(min_row=2):
         row[0].alignment = Alignment(wrap_text=True, vertical="top")
         row[6].alignment = Alignment(wrap_text=True, vertical="top")
         row[responsible_column - 1].alignment = Alignment(wrap_text=True, vertical="top")
+        row[prerequisites_column - 1].alignment = Alignment(wrap_text=True, vertical="top")
         out.row_dimensions[row[0].row].height = 180
     output.parent.mkdir(parents=True, exist_ok=True)
     wb.save(output)
@@ -147,6 +152,7 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
     report = output.with_suffix(".rapport.txt")
     report.write_text(f"{len(tasks)} tâches converties depuis {ws.title}.\n"
                       "Pilotes copiés intégralement dans Responsible (RACI) et conservés dans la description. Propriétaires non attribués sauf mapping explicite.\n"
+                      "Critères d’acceptation / prérequis copiés dans Prerequisites et conservés dans la description.\n"
                       "Avancement et charge laissés vides. Dates conservées.\n"
                       "L18 → L17 SS ajouté lorsque l'exception est présente dans la source.\n"
                       + ("\nPoints à vérifier :\n" + "\n".join(warnings) if warnings else "\nPas de conflit de dates détecté sur les liaisons FS/SS.\n"), encoding="utf-8")
