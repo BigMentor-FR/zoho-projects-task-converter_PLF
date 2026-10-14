@@ -32,6 +32,8 @@ Le tableau source doit commencer par une ligne `ID` / `Action` et conserver les 
 
 ## Import manuel
 
+La colonne supplémentaire `Responsible` reprend intégralement `Pilote proposé / appuis`. L'associer au champ personnalisé RACI `Responsible` dans l'étape de mapping des champs personnalisés Zoho. Les mentions de plusieurs personnes et équipes restent telles quelles, sans attribution automatique à des comptes utilisateurs. Le champ `Accountable` n'est pas alimenté, car la source ne le distingue pas.
+
 Dans Zoho, associer `TASK NAME`, `TASK ID`, `PREDECESSORS`, `TASK DESCRIPTION`, `TASK LIST NAME`, `START DATE` et `DUE DATE` aux champs correspondants. Le format des dates est `dd/MM/yyyy`. Les propriétaires restent non attribués en l'absence de mapping explicite.
 
 Documentation : https://help.zoho.com/portal/en/kb/projects/settings-in-zoho-projects/import-data/articles/import-tasks-from-files
