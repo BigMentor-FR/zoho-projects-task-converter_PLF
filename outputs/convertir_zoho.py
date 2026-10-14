@@ -7,15 +7,23 @@ Aucune connexion réseau. Aucun import dans Zoho.
 import argparse
 import json
 import re
-from copy import copy
 from datetime import datetime, date
 from pathlib import Path
 import openpyxl
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment, Font, PatternFill
+
+ZOHO_COLUMNS = [
+    "TASK NAME", "TASK ID", "PREDECESSORS", "PARENT TASK ID", "PARENT TASK NAME",
+    "TASK COMMENT", "TASK DESCRIPTION", "TASK LIST ID", "TASK LIST NAME", "TASK OWNER",
+    "TAGS", "CREATED BY", "START DATE", "DUE DATE", "% COMPLETED", "PRIORITY",
+    "CUSTOM STATUS", "WORK HOURS PER OWNER", "WORK HOURS UNIT", "COMPLETED ON",
+    "MILESTONE NAME ", "MILESTONE START DATE", "MILESTONE END DATE",
+    "Responsible", "Prerequisites",
+]
 
 
-def convert(source, template, output, sheet=None, list_name="Migration Linux 2026-2027", list_id=None, owners=None, status=None, overrides=None):
-    if output.resolve() in {source.resolve(), template.resolve()}:
+def convert(source, output, sheet=None, list_name="Migration Linux 2026-2027", list_id=None, owners=None, status=None, overrides=None):
+    if output.resolve() == source.resolve():
         raise ValueError("Le fichier de sortie doit être distinct des sources.")
     src = openpyxl.load_workbook(source, data_only=True)
     ws = src[sheet] if sheet else src.worksheets[1]
@@ -42,23 +50,15 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
     by_id = {t["ID"]: t for t in tasks}
     if len(by_id) != len(tasks):
         raise ValueError("Identifiants de tâches dupliqués.")
-    wb = openpyxl.load_workbook(template)
-    out = wb.worksheets[0]
-    # Un seul onglet d'import : pas d'exemples ni de tableaux annexes.
-    for other in list(wb.worksheets)[1:]:
-        wb.remove(other)
-    target_headers = [c.value for c in out[1]]
-    styles = [copy(c._style) for c in out[2]]
-    for name in ["TASK NAME", "TASK ID", "PREDECESSORS", "TASK DESCRIPTION", "TASK LIST NAME", "START DATE", "DUE DATE"]:
-        if name not in target_headers:
-            raise ValueError(f"Colonne absente du modèle : {name}")
-    out.delete_rows(2, out.max_row)
-    # Champ personnalisé RACI, à associer dans l'assistant d'import Zoho.
-    for custom_header in ("Responsible", "Prerequisites"):
-        if custom_header not in target_headers:
-            target_headers.append(custom_header)
-            out.cell(1, len(target_headers), custom_header)._style = copy(out.cell(1, 1)._style)
-            styles.append(copy(styles[0]))
+    wb = openpyxl.Workbook()
+    out = wb.active
+    target_headers = ZOHO_COLUMNS
+    out.append(target_headers)
+    for cell in out[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="16465D")
+        cell.alignment = Alignment(wrap_text=True, vertical="top")
+    out.row_dimensions[1].height = 32
     warnings = []
     graph = {}
     for task in tasks:
@@ -100,8 +100,7 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
                   "Responsible": task["Pilote proposé / appuis"],
                   "Prerequisites": task["Critère d’acceptation / prérequis"]}
         out.append([values.get(str(h).strip()) for h in target_headers])
-        for c, style in zip(out[out.max_row], styles):
-            c._style = copy(style)
+        for c in out[out.max_row]:
             if c.column in [target_headers.index("START DATE") + 1, target_headers.index("DUE DATE") + 1]:
                 c.number_format = "dd/mm/yyyy"
     visited, active = set(), set()
@@ -155,7 +154,6 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
-    parser.add_argument("template", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--sheet", help="Nom de l'onglet source (par défaut : deuxième onglet)")
     parser.add_argument("--list-name", default="Migration Linux 2026-2027")
@@ -167,7 +165,7 @@ def main():
     def load(path):
         return json.loads(path.read_text(encoding="utf-8")) if path else None
     try:
-        convert(args.source, args.template, args.output, args.sheet, args.list_name,
+        convert(args.source, args.output, args.sheet, args.list_name,
                 args.list_id, load(args.owners), args.status, load(args.dependencies))
     except (ValueError, KeyError, IndexError) as exc:
         parser.exit(1, f"Erreur : {exc}\n")

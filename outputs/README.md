@@ -6,11 +6,11 @@ Le script `convertir_zoho.py` convertit localement le deuxième onglet du planni
 
 Depuis le dossier `outputs` :
 
-Le modèle Zoho `XLSX-sample-taskimport.xlsx` est fourni et versionné dans ce dossier. Il est nécessaire au script pour reprendre les colonnes et la mise en forme.
+Les colonnes Zoho et les champs personnalisés sont définis directement dans le script. Aucun fichier modèle n'est nécessaire. `XLSX-sample-taskimport.xlsx` est conservé comme référence du format standard Zoho.
 
 ```bash
 python3 -m pip install -r requirements.txt
-python3 convertir_zoho.py /chemin/planning.xlsx XLSX-sample-taskimport.xlsx /chemin/import_zoho.xlsx
+python3 convertir_zoho.py /chemin/planning.xlsx /chemin/import_zoho.xlsx
 ```
 
 Le script produit un fichier Excel et un rapport texte. Les fichiers sources ne sont pas modifiés. Les classeurs et rapports générés dans `outputs` sont exclus de Git.
