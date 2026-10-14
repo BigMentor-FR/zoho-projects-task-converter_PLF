@@ -2,6 +2,7 @@ work/
 __pycache__/
 *.pyc
 .DS_Store
+.venv/
 outputs/*
 !outputs/convertir_zoho.py
 !outputs/README.md
