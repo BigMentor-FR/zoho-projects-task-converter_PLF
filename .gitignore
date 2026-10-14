@@ -6,3 +6,4 @@ outputs/*
 !outputs/convertir_zoho.py
 !outputs/README.md
 !outputs/requirements.txt
+!outputs/XLSX-sample-taskimport.xlsx
