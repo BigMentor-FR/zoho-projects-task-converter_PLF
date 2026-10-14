@@ -91,14 +91,7 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
                 warnings.append(f"{identifier} / {pred} FS : début {start:%d/%m/%Y}, fin du prédécesseur {prev['Fin proposée']:%d/%m/%Y}. Dates conservées, chevauchement ou même jour à vérifier.")
             if relation == "SS" and start < prev["Début proposé"]:
                 warnings.append(f"{identifier} / {pred} SS : début antérieur au prédécesseur.")
-        description = "\n\n".join([
-            f"ID source : {identifier}",
-            f"Pilote proposé / appuis : {task['Pilote proposé / appuis'] or ''}",
-            f"Statut source : {task['Statut à renseigner'] or ''}",
-            f"Critère d’acceptation / prérequis : {task['Critère d’acceptation / prérequis'] or ''}",
-            f"Source / écart à l’ébauche : {task['Source / écart à l’ébauche'] or ''}",
-            "Dates proposées à confirmer. La durée calendaire n’est pas une charge de travail.",
-        ])
+        description = task["Source / écart à l’ébauche"] or None
         values = {"TASK NAME": name, "TASK ID": identifier,
                   "PREDECESSORS": ", ".join(f"{p} {rel}" for p, rel in relations) or None,
                   "TASK DESCRIPTION": description, "TASK LIST NAME": str(list_id) if list_id else list_name,
@@ -151,8 +144,8 @@ def convert(source, template, output, sheet=None, list_name="Migration Linux 202
     assert [c.value for c in saved.active[1]] == target_headers
     report = output.with_suffix(".rapport.txt")
     report.write_text(f"{len(tasks)} tâches converties depuis {ws.title}.\n"
-                      "Pilotes copiés intégralement dans Responsible (RACI) et conservés dans la description. Propriétaires non attribués sauf mapping explicite.\n"
-                      "Critères d’acceptation / prérequis copiés dans Prerequisites et conservés dans la description.\n"
+                      "Pilotes copiés intégralement dans Responsible (RACI). Propriétaires non attribués sauf mapping explicite.\n"
+                      "Critères d’acceptation / prérequis copiés dans Prerequisites. Description limitée à la source / écart à l’ébauche.\n"
                       "Avancement et charge laissés vides. Dates conservées.\n"
                       "L18 → L17 SS ajouté lorsque l'exception est présente dans la source.\n"
                       + ("\nPoints à vérifier :\n" + "\n".join(warnings) if warnings else "\nPas de conflit de dates détecté sur les liaisons FS/SS.\n"), encoding="utf-8")

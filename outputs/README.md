@@ -26,13 +26,13 @@ Exécuter `python3 convertir_zoho.py --help` pour toutes les options.
 
 ## Règles de conversion
 
-Les noms, identifiants et dates sont conservés. Les dépendances sont fin-début (FS), sauf l'exception L18/L17 début-début (SS) explicitement décrite dans la source. Les pilotes, critères d'acceptation et références sont conservés dans les descriptions. Charge et avancement restent vides. Les conflits de dates détectés sont signalés dans le rapport sans replanification.
+Les noms, identifiants et dates sont conservés. Les dépendances sont fin-début (FS), sauf l'exception L18/L17 début-début (SS) explicitement décrite dans la source. Les pilotes sont placés dans Responsible, les critères dans Prerequisites et les références / écarts dans la description. Charge et avancement restent vides. Les conflits de dates détectés sont signalés dans le rapport sans replanification.
 
 Le tableau source doit commencer par une ligne `ID` / `Action` et conserver les intitulés de colonnes attendus. Une ligne sans ID marque sa fin. Le script vérifie les dates, les identifiants, les références et les cycles de dépendances.
 
 ## Import manuel
 
-La colonne `Prerequisites` reprend intégralement `Critère d’acceptation / prérequis`. L'associer au champ personnalisé multiligne `Prerequisites` (nom API `prerequisites`) dans Zoho. Ces informations restent également dans la description.
+La colonne `Prerequisites` reprend intégralement `Critère d’acceptation / prérequis`. L'associer au champ personnalisé multiligne `Prerequisites` (nom API `prerequisites`) dans Zoho.
 
 La colonne supplémentaire `Responsible` reprend intégralement `Pilote proposé / appuis`. L'associer au champ personnalisé RACI `Responsible` dans l'étape de mapping des champs personnalisés Zoho. Les mentions de plusieurs personnes et équipes restent telles quelles, sans attribution automatique à des comptes utilisateurs. Le champ `Accountable` n'est pas alimenté, car la source ne le distingue pas.
 
